@@ -1,0 +1,782 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CD Burning Workstation &mdash; Interactive Tour</title>
+<style>
+  :root { --bg:#0e1116; --accent:#94a3b8; --accent-deep:#64748B; --panel:#0000002e;
+          --text:#e6e6e6; --muted:#9aa0a6; --good:#4ade80; --bad:#f87171; --warn:#fbbf24; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+  header{padding:18px 24px;border-bottom:1px solid #ffffff14}
+  header h1{margin:0;font-size:20px;color:var(--accent)}
+  header p{margin:6px 0 0;color:var(--muted);font-size:13px}
+  header .persist-note{margin-top:4px;font-size:11px;color:var(--muted);opacity:.8}
+  .badge{display:inline-block;background:var(--accent-deep);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px}
+  .pills{display:flex;gap:6px;flex-wrap:wrap;padding:12px 24px;border-bottom:1px solid #ffffff14}
+  .pill{font-size:12px;padding:4px 10px;border:1px solid #ffffff22;border-radius:999px;color:var(--muted);cursor:pointer;background:transparent}
+  .pill.active{background:var(--accent);color:#0e1116;font-weight:600;border-color:var(--accent)}
+  .pill.done{border-color:var(--good);color:var(--good)}
+  .pill.tool{border-style:dashed}
+  main{display:grid;grid-template-columns:1fr 1fr;min-height:60vh}
+  @media (max-width:880px){main{grid-template-columns:1fr}.lesson{border-right:none!important;border-bottom:1px solid #ffffff14}}
+  .lesson,.practice{padding:22px 24px}
+  .lesson{border-right:1px solid #ffffff14}
+  .lesson h2{color:var(--accent);margin-top:0;font-size:18px}
+  .lesson ul{padding-left:18px}.lesson li{margin:6px 0}
+  .trap{border-left:3px solid var(--warn);background:#fbbf2410;padding:10px 12px;border-radius:4px;margin:12px 0;font-size:14px}
+  .trap b{color:var(--warn)}
+  .worked{border-left:3px solid var(--accent-deep);background:#ffffff08;padding:10px 12px;border-radius:4px;margin:12px 0;font-size:14px}
+  figure{margin:14px 0}figcaption{color:var(--muted);font-size:12px;margin-top:6px}
+  .practice h3{margin-top:0;color:var(--accent);font-size:16px}
+  .nav{display:flex;gap:10px;align-items:center;padding:14px 24px;border-top:1px solid #ffffff14}
+  button{font:inherit}
+  button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}
+  button.ghost:disabled{opacity:.35;cursor:not-allowed}
+  .counter{color:var(--muted);font-size:13px;margin-left:auto}
+  .qc{margin-top:16px;border-top:1px solid #ffffff14;padding-top:14px}
+  .qc h4{margin:0 0 8px;font-size:14px;color:var(--accent)}
+  .opt{all:unset;display:flex;align-items:center;gap:8px;padding:8px 10px;margin:4px 0;border:1px solid #ffffff1a;border-radius:8px;cursor:pointer;font-size:14px}
+  .opt:hover{border-color:var(--accent)}
+  .opt.correct{border-color:var(--good);background:#4ade8018}
+  .opt.wrong{border-color:var(--bad);background:#f8717118}
+  .opt[disabled]{cursor:default}
+  .explain{display:none;margin-top:8px;font-size:13px;color:var(--muted);border-left:2px solid var(--accent-deep);padding-left:10px}
+  .links{margin-top:14px;font-size:13px}
+  .links a{color:var(--accent);display:inline-block;margin:3px 0}
+  .links .kind{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
+  .video-card{display:flex;gap:10px;align-items:center;border:1px solid #ffffff1a;border-radius:8px;padding:8px;text-decoration:none;color:var(--text);margin-top:6px}
+  .video-card:hover{border-color:var(--accent)}
+  .video-card-thumb{width:96px;height:54px;border-radius:4px;background-size:cover;background-position:center;position:relative;flex-shrink:0}
+  .video-card-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;text-shadow:0 0 6px #000}
+  .video-card-info b{display:block;font-size:13px}
+  .video-card-info span{color:var(--muted);font-size:12px}
+  table.cheat{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px}
+  table.cheat td,table.cheat th{border:1px solid #ffffff14;padding:6px 8px;text-align:left}
+  table.cheat th{color:var(--accent)}
+  code{background:#ffffff12;padding:1px 5px;border-radius:3px;font-family:ui-monospace,monospace;font-size:13px}
+  .quiz-wrap{padding:22px 24px;border-top:1px solid #ffffff14}
+  .q{margin-bottom:18px}.q p{font-weight:600;margin:0 0 6px}
+  #score{font-weight:700;color:var(--accent)}
+  .flash-stage{display:flex;justify-content:center;padding:18px 0;perspective:1200px}
+  .flash-card{width:min(420px,90%);height:190px;position:relative;cursor:pointer;transform-style:preserve-3d;transition:transform .45s}
+  .flash-card.flipped{transform:rotateY(180deg)}
+  .flash-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid #ffffff22;border-radius:12px;
+              display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;font-size:16px}
+  .flash-front{background:#ffffff08;color:var(--text);font-weight:700}
+  .flash-back{background:var(--accent-deep);color:#fff;transform:rotateY(180deg);font-size:14px;font-weight:400}
+  .flash-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:8px}
+  .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .match-col{display:flex;flex-direction:column;gap:8px}
+  .match-btn{all:unset;padding:10px 12px;border:1px solid #ffffff1a;border-radius:8px;cursor:pointer;font-size:13px;text-align:left}
+  .match-btn:hover{border-color:var(--accent)}
+  .match-btn.sel{border-color:var(--accent);background:#94a3b818}
+  .match-btn.matched{border-color:var(--good);background:#4ade8018;opacity:.55;cursor:default}
+  .match-btn.wrong{border-color:var(--bad);background:#f8717118}
+  .cd-section{border:1px solid #ffffff1a;border-radius:8px;padding:14px 16px;margin-top:14px}
+  .cd-section h4{margin:0 0 8px;color:var(--accent);font-size:14px}
+  .cd-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;margin:8px 0}
+  .cd-row label{color:var(--muted);display:flex;align-items:center;gap:5px}
+  .cd-row input[type=number],.cd-row input[type=text]{background:#ffffff0c;border:1px solid #ffffff22;border-radius:6px;color:var(--text);padding:4px 8px;font-family:ui-monospace,monospace;font-size:13px}
+  .cd-row input[type=number]{width:76px}
+  .cd-row input[type=text]{width:120px}
+  .cd-row select{background:#ffffff0c;border:1px solid #ffffff22;border-radius:6px;color:var(--text);padding:4px 8px;font-size:13px}
+  .cd-readout{background:#000;border-radius:6px;padding:10px 12px;margin-top:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:#94a3b8}
+  .cd-readout b{color:var(--accent)}
+  .cd-good{color:var(--good)}
+  .cd-bad{color:var(--bad)}
+  .cd-tracklist{margin-top:8px;font-size:12.5px}
+  .cd-tracklist div{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #ffffff0c}
+  .cd-gauge-bar{height:10px;border-radius:5px;background:#ffffff14;overflow:hidden;margin-top:6px}
+  .cd-gauge-fill{height:100%;transition:width .2s}
+  .report-card{border:1px solid #ffffff22;border-radius:10px;padding:20px 22px;max-width:560px}
+  .report-card h4{margin:16px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .report-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #ffffff10;font-size:14px}
+  .report-row .grade{font-weight:700}
+  .grade-A{color:var(--good)} .grade-B{color:#a3e635} .grade-C{color:var(--warn)} .grade-D,.grade-F{color:var(--bad)} .grade-dash{color:var(--muted)}
+  .report-overall{display:flex;align-items:baseline;gap:10px;margin:14px 0}
+  .report-overall .big{font-size:40px;font-weight:800}
+  #printBtn{margin-top:16px}
+  @media print{
+    header .persist-note, .pills, #nav, .report-card #printBtn{display:none!important}
+    body{background:#fff;color:#111}
+    .report-card{border-color:#ccc;max-width:none}
+    .report-row{border-bottom-color:#ddd}
+  }
+</style></head>
+<body>
+<header>
+  <h1>CD Burning Workstation <span class="badge">Chain K &middot; Hands-on</span></h1>
+  <p>Blank media &amp; drive capability &rarr; acquisition &amp; conversion &rarr; burning &amp;
+     verification &rarr; automation &amp; ethics. Check real Audio CD format compliance and budget a
+     real disc's time capacity in the <b>Format &amp; Capacity Simulator</b> tab before you burn a disc
+     that skips, or doesn't fit at all.</p>
+  <p class="persist-note">Progress (quick checks, quiz score, flashcards known) saves in this browser
+     only &mdash; localStorage, not an account. Clearing site data or switching browsers resets it.</p>
+</header>
+
+<div class="pills" id="pills"></div>
+
+<main>
+  <section class="lesson" id="lesson"></section>
+  <section class="practice" id="practice"></section>
+</main>
+
+<div class="nav" id="nav">
+  <button class="ghost" id="prev">&larr; Previous</button>
+  <button class="ghost" id="next">Next &rarr;</button>
+  <span class="counter" id="counter"></span>
+</div>
+
+<div class="quiz-wrap" id="quizWrap" style="display:none">
+  <h3 style="color:var(--accent);margin-top:0">Check Your Understanding</h3>
+  <div id="quiz"></div>
+  <p>Score: <span id="score">0</span> / <span id="total"></span></p>
+</div>
+
+<div class="quiz-wrap" id="toolWrap" style="display:none"></div>
+
+<script>
+const LESSONS = [
+{
+  short:"Blank media & drive capability",
+  title:"Choosing blank media, and confirming your drive can actually burn",
+  body:`<p>Before downloading a single track, two things need confirming: what kind of disc actually
+  fits the job, and whether the drive in this old machine can write one at all.</p>
+  <ul><li><b>CD-R</b> is write-once, using a photosensitive organic dye as its data layer. <b>CD-RW</b>
+  is rewritable, using a phase-change metal-alloy film instead — but many car stereos and older
+  standalone players genuinely cannot read CD-RW discs at all. That's a real compatibility tradeoff, not
+  just a storage-flexibility one.</li>
+  <li><b>Capacity</b> comes in two standard sizes: 650MB/74min or 700MB/80min — this directly caps how
+  many tracks fit on one disc.</li>
+  <li><b>Dye quality matters for longevity</b>: under good conditions, archival-quality phthalocyanine-
+  dye CD-Rs can exceed 100 years of readability; cheap, non-archival discs can degrade in as little as
+  5-10 years.</li>
+  <li>Many optical drives — especially in a machine repurposed as "just a Linux box" — are
+  <b>read-only</b>. Confirm real burn capability with <code>wodim --devices</code> before buying any
+  media at all.</li></ul>
+  <div class="trap"><b>The trap — two listed Common Mistakes:</b> buying the cheapest unbranded CD-R
+  spindle for something meant to last, and assuming every optical drive can burn. Either mistake wastes
+  either money or an entire round trip of ordering media for a drive that was never going to write
+  it.</div>
+  <div class="worked"><b>Worked:</b> running <code>wodim --devices</code> on a drive that turns out to
+  be read-only saves buying a stack of blank discs for hardware that can never write them — a five-
+  second check before any purchase.</div>`,
+  practice:`<h3>Practice — before ordering anything</h3>
+  <ol><li>Run <code>wodim --devices</code> (or check <code>dmesg</code> after inserting a blank disc) on
+  your actual machine before buying blank media.</li></ol>`,
+  quick:{ q:"Why might a CD-RW disc be the wrong choice for a mix CD meant to play in a car stereo?",
+    choices:["Many car stereos and older standalone players cannot read CD-RW discs at all, regardless of how the data was written","CD-RW discs are physically incompatible with any Audio CD content","CD-RW discs can only store data files, never audio","CD-RW discs have less capacity than CD-R by design"],
+    a:0, ex:"This is a real hardware compatibility limitation, not a data-format issue — many players' laser/reflectivity detection simply can't read CD-RW's phase-change layer the way it reads CD-R's dye layer." },
+  links:[
+    {type:"read", label:"Library of Congress — CD-R/DVD-R/RW Longevity Research", url:"https://www.loc.gov/preservation/scientists/projects/cd-r_dvd-r_rw_longevity.html"}
+  ]
+},
+{
+  short:"Acquisition & conversion",
+  title:"Downloading with yt-dlp, and converting to the exact format Audio CD requires",
+  body:`<p>This is the step where "any audio file" stops being good enough — Audio CD has one fixed,
+  exact target format, not a range of acceptable ones.</p>
+  <ul><li><code>yt-dlp</code> is an actively maintained downloader; <code>-x --audio-format &lt;fmt&gt;</code>
+  extracts just the audio track from a video, in whatever format you specify.</li>
+  <li><b>Audio CD (Red Book / CD-DA)</b> requires <i>exactly</i> 44.1kHz sample rate, 16-bit depth, and
+  2-channel (stereo) PCM audio — not "close enough," not whatever format the download happened to
+  produce.</li>
+  <li><code>ffmpeg</code> converts to that exact spec: <code>-ar 44100 -sample_fmt s16</code> (or
+  <code>-c:a pcm_s16le -ar 44100</code>) writing a WAV file — genuinely checkable format compliance,
+  not a vague "sounds fine" judgment call.</li>
+  <li>Verify with <code>ffprobe</code> <i>before</i> touching a blank disc — far cheaper than
+  discovering a format mismatch after burning.</li>
+  <li><b>Package compatibility across distros</b>: whichever lightweight distro Linux-On-Old-Hardware
+  ended up choosing, every tool here is available natively — <code>yt-dlp</code>, <code>ffmpeg</code>,
+  and <code>wodim</code>/<code>genisoimage</code> (bundled together as the <code>cdrkit</code> package)
+  install via <code>apt</code> on Debian/Xubuntu or <code>apk</code> on Alpine. Same tools, different
+  package manager — not an actual compatibility gap.</li></ul>
+  <div class="trap"><b>The trap — a listed Common Mistake, plus one specific to this machine:</b>
+  burning straight from a downloaded MP3/AAC without converting to the exact PCM format Audio CD needs
+  — some burners "accept" the wrong format without complaint but produce a disc that skips or won't
+  play in older players. Separately: reaching for a GUI burner (Brasero/K3B) by default pulls in a real
+  slice of GNOME's or KDE's library stack — a direct conflict with a machine chosen specifically for a
+  lightweight desktop (or no desktop at all, on Alpine). The CLI tools above are the actual recommended
+  path here, not just the "advanced" option.</div>
+  <div class="worked"><b>Worked:</b> a downloaded file at 48000Hz/24-bit/mono fails all three Audio CD
+  requirements at once; running it through <code>ffmpeg -ar 44100 -sample_fmt s16</code> (and mixing to
+  stereo) makes it fully compliant — a checkable, fixable mismatch, not a mysterious playback
+  problem.</div>`,
+  practice:`<h3>Practice — Format & Capacity Simulator</h3>
+  <ol><li>Open the <b>Format &amp; Capacity Simulator</b> tab's compliance checker and try a few
+  non-standard sample rates/bit depths/channel counts. Watch exactly which requirement(s) fail.</li></ol>`,
+  quick:{ q:"Why can a burner \"accept\" a non-compliant audio file without error and still produce a disc that skips or won't play?",
+    choices:["The burner may not strictly validate the input format before writing — Audio CD players expect data laid out at the exact 44100Hz/16-bit/stereo rate, so anything else can produce corrupted or misread playback even if the burn itself reported success","Burners always reject non-compliant files immediately with a clear error","Skipping is caused exclusively by scratched discs, never by format issues","Audio CD players can automatically resample any input format during playback"],
+    a:0, ex:"'The burn completed' only means the write process finished — it says nothing about whether the actual bits match what an Audio CD player expects to decode, which is exactly why format compliance has to be checked before burning, not inferred from a successful-looking burn." },
+  links:[
+    {type:"read", label:"yt-dlp — official repository and documentation", url:"https://github.com/yt-dlp/yt-dlp/"},
+    {type:"read", label:"FFmpeg Cookbook — Audio Format Conversion", url:"https://ffmpeg-cookbook.com/en/articles/audio-format-conversion/"}
+  ]
+},
+{
+  short:"Burning & verification",
+  title:"Audio CD vs. Data CD, and verifying a burn before trusting it",
+  body:`<p>Two genuinely different disc types exist for two different goals — and a burn that "finished"
+  isn't automatically a burn you can trust.</p>
+  <ul><li><b>Audio CD</b> (via <code>wodim</code>/<code>cdrecord</code> with the <code>-audio</code>
+  flag) plays in any standalone CD player — the format this whole pipeline targets.</li>
+  <li><b>Data CD</b> (via <code>genisoimage</code>/<code>mkisofs</code>, building an ISO filesystem)
+  stores files — like MP3s — as a regular filesystem. It plays back only on a computer or an
+  MP3-capable player, never a standard CD player, but holds far more content per disc since it isn't
+  locked to Audio CD's fixed PCM data rate.</li>
+  <li><b>TAO</b> (Track At Once) introduces a real ~2 second gap between tracks; <b>DAO</b> (Disc At
+  Once) burns the whole disc as one continuous write with no gap — the actual, mechanical reason some
+  burned CDs have unwanted silence between songs and others don't.</li>
+  <li><b>Verification</b>: a burn that completes with no reported error is not the same as a burn
+  that's actually readable end to end. A read-back or checksum pass catches real, if uncommon,
+  failures before you rely on the disc.</li></ul>
+  <div class="trap"><b>The trap — a listed Common Mistake:</b> not verifying the burn. A disc that
+  appears to finish writing can still contain real read errors — "no error reported" and "verified
+  good" are different claims.</div>
+  <div class="worked"><b>Worked:</b> the same track list burned in TAO mode has audible ~2-second gaps
+  between songs; the identical files burned in DAO mode play back gap-free — same content, same drive,
+  only the write mode changed.</div>`,
+  practice:`<h3>Practice — before trusting a disc</h3>
+  <ol><li>After your next test burn, run a read-back or checksum verification pass — don't rely on "the
+  burn finished" alone.</li></ol>`,
+  quick:{ q:"Why isn't \"the burn completed with no reported error\" sufficient proof that a disc is actually good?",
+    choices:["Completion just means the write process finished — it doesn't guarantee every sector is actually readable back correctly, which is exactly what a read-back or checksum verification pass checks","Burn software always performs full verification automatically by default","A completed burn is mathematically guaranteed to be error-free","Verification is only relevant for Data CDs, never for Audio CDs"],
+    a:0, ex:"Completion and correctness are genuinely different claims — a real read-back/checksum step checks the second one directly, rather than assuming it from the first." },
+  links:[
+    {type:"read", label:"CD writing using cdrecord", url:"https://www.axllent.org/docs/cd-writing-using-cdrecord/"}
+  ]
+},
+{
+  short:"Automation & ethics",
+  title:"Scripting the whole pipeline, and where personal archival ends",
+  body:`<p>This is the natural place to actually <i>use</i> the shell fluency from
+  Shell-And-Small-Software instead of just drilling it, and to be explicit about where this project's
+  scope actually ends.</p>
+  <ul><li>Wrap <b>download &rarr; convert &rarr; burn</b> in one script with real argument validation
+  (a URL list, a target disc size) and clear exit codes — not three commands typed by hand every
+  time.</li>
+  <li><code>set -euo pipefail</code> belongs here too: a failed download shouldn't silently let the
+  script proceed to burn whatever partial file resulted.</li>
+  <li><b>Ethics, precisely</b>: this project is for personal-use archival of your own material or
+  content you have the rights to — not redistribution or piracy. <code>yt-dlp</code> itself is a
+  legitimate, general-purpose downloading tool; how you use it is what determines whether a given
+  download is fine.</li></ul>
+  <div class="trap"><b>The trap — a listed Common Mistake:</b> downloading and redistributing
+  copyrighted content. The personal-use line is a real, meaningful one, not a technicality to route
+  around.</div>
+  <div class="worked"><b>Worked:</b> a script that validates the URL list and target disc size before
+  downloading anything, exiting with a clear nonzero code and message if the list is empty or malformed
+  — catching a mistake before wasting bandwidth or a blank disc, the exact Shell-And-Small-Software
+  habit applied here.</div>`,
+  practice:`<h3>Practice — script it for real</h3>
+  <ol><li>Write the validation step first: given a list of URLs and a target disc size, reject an empty
+  list or an invalid size with a clear message and nonzero exit code, before any download logic runs at
+  all.</li></ol>`,
+  quick:{ q:"What specifically distinguishes legitimate personal-use archival (this project's actual scope) from something outside it?",
+    choices:["Downloading and keeping your own material or content you have the rights to, for personal use, versus downloading and redistributing copyrighted content to others","Any download performed using yt-dlp is automatically legitimate regardless of the content or intent","Personal-use archival requires burning a physical disc; keeping a digital copy is never legitimate","There is no meaningful legal distinction between personal use and redistribution"],
+    a:0, ex:"The tool itself is neutral — the same yt-dlp command can be entirely legitimate (archiving your own content) or not (redistributing someone else's), and the difference is real, not a loophole." },
+  links:[
+    {type:"read", label:"OSTechNix — Yt-dlp Commands: The Complete Tutorial", url:"https://ostechnix.com/yt-dlp-tutorial/"}
+  ]
+}
+];
+
+const QUIZ = [
+ {q:"Why might a CD-RW disc be the wrong choice for a mix CD meant for a car stereo, specifically?",
+  o:["Many car stereos and older standalone players cannot read CD-RW discs at all, regardless of how the data was written to them","CD-RW discs are incompatible with Audio CD content by definition","CD-RW discs can only hold data files, never audio tracks","CD-RW always has lower capacity than CD-R"],c:0,
+  ex:"This is a real hardware/optical compatibility limitation in many players — not a data-format restriction — which is why CD-R is often the safer default for something meant to play in unknown or older hardware."},
+ {q:"Why is checking `wodim --devices` before buying any blank media a genuinely useful step, not just a formality?",
+  o:["Many optical drives, especially in a machine repurposed as 'just a Linux box,' are read-only — confirming real burn capability first avoids buying media a drive can never write","All optical drives can burn discs by default, making this check unnecessary","wodim --devices only reports disc capacity, never burn capability","This check is only relevant for USB external drives, never internal ones"],c:0,
+  ex:"A read-only drive is a real, common possibility — a five-second check avoids wasting money on blank media for hardware that was never going to write it."},
+ {q:"Why does Audio CD require exactly 44100Hz/16-bit/stereo PCM, rather than accepting 'close enough' audio quality?",
+  o:["The Red Book/CD-DA specification is a fixed hardware format that standalone players expect precisely — anything else can produce corrupted or misread playback even if a burn tool accepts it without complaint","Higher-quality audio formats always sound worse when played on a CD player","44100Hz/16-bit/stereo is simply the most common format by convention, with no technical requirement behind it","Audio CD players automatically convert any input format during playback, making the requirement irrelevant"],c:0,
+  ex:"This is a real, fixed hardware specification, not a loose convention — deviating from it is exactly why some non-compliant burns skip or fail to play even though the burn process itself reported success."},
+ {q:"What's the actual mechanical difference between TAO (Track At Once) and DAO (Disc At Once) burning that explains the gap-between-tracks issue?",
+  o:["TAO writes each track as a separate operation with a real ~2 second gap introduced between them; DAO writes the whole disc as one continuous operation with no gap","TAO and DAO produce identical output; the gap is caused by a completely unrelated setting","DAO mode is only available for Data CDs, never for Audio CDs","TAO mode burns faster specifically because it skips verifying each track"],c:0,
+  ex:"This is a genuine mechanical difference in how the burn is structured, not a random audio artifact — DAO's single continuous write is the actual fix for unwanted gaps between tracks."},
+ {q:"Why isn't a burn that completes with no reported error sufficient proof that the resulting disc is good?",
+  o:["Completion only confirms the write process finished — it doesn't confirm every sector is actually readable back correctly, which a real read-back or checksum pass checks directly","Burn software always performs a full automatic verification pass by default on every burn","A successfully completed burn is mathematically guaranteed to be free of read errors","Verification only matters for Data CDs, never for Audio CDs"],c:0,
+  ex:"'Completed successfully' and 'verified readable' are different claims — trusting the first without checking the second is exactly how the Common Mistake this project warns about happens."},
+ {q:"Why does a Data CD hold more content per disc than an Audio CD of the same physical size?",
+  o:["A Data CD's filesystem isn't locked to Audio CD's fixed 44100Hz/16-bit/stereo PCM data rate, so compressed formats (like MP3) fit far more audio into the same physical capacity","Data CDs are physically larger than Audio CDs","Audio CDs use a lower-capacity dye layer than Data CDs","Data CDs use a completely different, higher-capacity optical technology"],c:0,
+  ex:"The same physical disc holds the same raw bytes either way — the difference is that a Data CD can store compressed file formats instead of being locked to Audio CD's fixed, uncompressed PCM rate."},
+ {q:"What specifically distinguishes this project's legitimate personal-use archival scope from something it explicitly doesn't cover?",
+  o:["Downloading and keeping your own material or content you have the rights to for personal use, versus downloading and redistributing copyrighted content to others","Using yt-dlp at all is inherently illegitimate regardless of what's downloaded","Personal-use archival is only legitimate if the content is burned to a physical disc, never kept digitally","There is no real distinction — any download of online content carries identical legal risk"],c:0,
+  ex:"The tool is neutral; the use case is what matters. This project's own scope is explicit about that line, and it's a real, meaningful distinction rather than a technicality."}
+];
+
+/* Key terms — pulled from the bolded/code terms across the four lessons above. */
+const KEY_TERMS = [
+  ["CD-R", "Write-once, using a photosensitive organic dye as its data layer."],
+  ["CD-RW", "Rewritable via a phase-change metal-alloy film — but many car stereos/older players can't read it at all."],
+  ["Disc capacity (74/80min)", "The two standard Audio CD sizes — 650MB/74min or 700MB/80min."],
+  ["Dye quality & longevity", "Archival-quality CD-R can exceed 100 years readable; cheap non-archival discs can degrade in 5-10."],
+  ["wodim --devices", "Confirms real burn capability before buying any blank media — many drives are read-only."],
+  ["yt-dlp", "An actively maintained downloader; -x --audio-format extracts just the audio track."],
+  ["ffmpeg -ar / -sample_fmt", "Converts audio to the exact 44100Hz/16-bit spec Audio CD requires."],
+  ["Red Book / CD-DA exact format", "44100Hz, 16-bit, 2-channel (stereo) PCM — a fixed hardware spec, not a loose target."],
+  ["ffprobe verification", "Checks a file's real format before burning — cheaper than discovering a mismatch after."],
+  ["wodim/cdrecord -audio", "Burns a standards-compliant Audio CD that plays in any standalone player."],
+  ["genisoimage / mkisofs (Data CD)", "Builds a filesystem ISO storing files (like MP3s) — computer/MP3-player playback only, more content per disc."],
+  ["TAO vs DAO", "Track At Once introduces a real gap between tracks; Disc At Once burns continuously with no gap."],
+  ["Burn verification (read-back/checksum)", "Confirms a disc is actually readable end to end — 'completed' and 'good' are different claims."],
+  ["Personal-use archival line", "Your own material or content you have rights to, for personal use — not redistribution or piracy."],
+  ["set -euo pipefail (reused)", "A failed download shouldn't silently let the script burn whatever partial file resulted."],
+  ["Argument validation + exit codes", "Reject an empty URL list or invalid disc size with a clear message before any download runs."],
+  ["CD-DA data rate (176,400 bytes/sec)", "44100 samples/sec × 16 bits × 2 channels ÷ 8 — the real, fixed Audio CD byte rate."],
+  ["Standalone player vs computer-only playback", "The real practical difference between choosing Audio CD and Data CD."]
+];
+
+const STATE_KEY = 'chainK_cdBurningWorkstation_v1';
+function loadState(){
+  try{ const raw = localStorage.getItem(STATE_KEY); return raw ? JSON.parse(raw) : null; }
+  catch(e){ return null; }
+}
+function saveState(){
+  try{
+    localStorage.setItem(STATE_KEY, JSON.stringify({
+      answered, quizScore: score, quizDone: [...done], fcKnown: [...fcKnown],
+      popLastScore, popLastTotal, popAttemptsCount, matchBestAttempts,
+      cdSampleRate, cdBitDepth, cdChannels, cdTracks, cdDiscMinutes
+    }));
+  }catch(e){ /* storage unavailable — progress just won't persist this session */ }
+}
+const SAVED = loadState();
+
+let idx = 0;
+const answered = SAVED && Array.isArray(SAVED.answered) && SAVED.answered.length === LESSONS.length
+  ? SAVED.answered.slice() : new Array(LESSONS.length).fill(false);
+
+function videoCard(l){
+  return `<a class="video-card" href="${l.url}" target="_blank" rel="noopener">
+    <span class="video-card-thumb" style="background-image:url('https://img.youtube.com/vi/${l.vid}/hqdefault.jpg')">
+      <span class="video-card-play">&#9658;</span></span>
+    <span class="video-card-info"><b>${l.label}</b><span>${l.channel} &middot; opens on YouTube</span></span></a>`;
+}
+function renderLinks(links){
+  if(!links || !links.length) return '';
+  const rows = links.map(l => l.type === 'watch'
+    ? videoCard(l)
+    : `<div><span class="kind">${l.type}</span><a href="${l.url}" target="_blank" rel="noopener">${l.label}</a></div>`).join('');
+  return `<div class="links"><h4 style="margin:0 0 6px;font-size:14px;color:var(--accent)">Continue learning</h4>${rows}</div>`;
+}
+function renderQuick(i){
+  const q = LESSONS[i].quick;
+  if(!q) return '';
+  const isDone = answered[i];
+  return `<div class="qc"><h4>Quick check</h4><p style="margin:0 0 6px;font-size:14px">${q.q}</p>
+    <div id="qcopts">${q.choices.map((c,ci)=>`<button class="opt ${isDone && ci===q.a?'correct':''}" data-ci="${ci}" ${isDone?'disabled':''}>${c}</button>`).join('')}</div>
+    <div class="explain" id="qcex" style="${isDone?'display:block':''}">${isDone?q.ex:''}</div></div>`;
+}
+
+const TOOLS = ['Flashcards','Match','Pop Quiz','Cheat Sheet','Format & Capacity Simulator','Report Card'];
+function pillsHTML(){
+  const lessonPills = LESSONS.map((l,i)=>
+    `<button class="pill ${i===idx?'active':''} ${answered[i]?'done':''}" data-i="${i}">${i+1}. ${l.short}</button>`).join('');
+  const quizPill = `<button class="pill ${idx===LESSONS.length?'active':''}" data-i="${LESSONS.length}">Quiz</button>`;
+  const toolPills = TOOLS.map((t,ti)=>{
+    const i = LESSONS.length + 1 + ti;
+    return `<button class="pill tool ${i===idx?'active':''}" data-i="${i}">${t}</button>`;
+  }).join('');
+  return lessonPills + quizPill + toolPills;
+}
+function render(){
+  document.getElementById('pills').innerHTML = pillsHTML();
+  const isQuiz = idx === LESSONS.length;
+  const isTool = idx > LESSONS.length;
+  document.querySelector('main').style.display = (isQuiz || isTool) ? 'none' : 'grid';
+  document.getElementById('quizWrap').style.display = isQuiz ? 'block' : 'none';
+  document.getElementById('toolWrap').style.display = isTool ? 'block' : 'none';
+  document.getElementById('nav').style.display = isTool ? 'none' : 'flex';
+  if(isTool){ renderTool(idx - LESSONS.length - 1); return; }
+  if(isQuiz){ document.getElementById('counter').textContent = 'Final quiz'; renderQuiz(); syncNav(); return; }
+  const L = LESSONS[idx];
+  document.getElementById('lesson').innerHTML =
+    `<h2>${idx+1}. ${L.title}</h2>${L.body}${renderLinks(L.links)}${renderQuick(idx)}`;
+  document.getElementById('practice').innerHTML = L.practice;
+  document.getElementById('counter').textContent = `Lesson ${idx+1} of ${LESSONS.length}`;
+  const opts = document.getElementById('qcopts');
+  if(opts) opts.addEventListener('click', e => {
+    const b = e.target.closest('.opt'); if(!b || b.disabled) return;
+    const q = LESSONS[idx].quick, pick = +b.dataset.ci;
+    [...opts.children].forEach((el,ci)=>{ el.disabled = true;
+      if(ci===q.a) el.classList.add('correct'); else if(ci===pick) el.classList.add('wrong'); });
+    const ex = document.getElementById('qcex'); ex.textContent = q.ex; ex.style.display='block';
+    answered[idx] = true;
+    saveState();
+    syncNav(); render2Pills();
+  });
+  syncNav();
+}
+function render2Pills(){
+  document.querySelectorAll('.pill').forEach((p,i)=>{ if(answered[i]) p.classList.add('done'); });
+}
+function syncNav(){
+  document.getElementById('prev').disabled = idx === 0;
+  const n = document.getElementById('next');
+  const gated = idx < LESSONS.length && !answered[idx];
+  n.disabled = idx > LESSONS.length - 1 || gated;
+  n.textContent = gated ? 'Answer the quick check to continue' : 'Next →';
+}
+
+let score = SAVED && Number.isFinite(SAVED.quizScore) ? SAVED.quizScore : 0;
+let done = new Set(SAVED && Array.isArray(SAVED.quizDone) ? SAVED.quizDone : []);
+function renderQuiz(){
+  document.getElementById('total').textContent = QUIZ.length;
+  document.getElementById('quiz').innerHTML = QUIZ.map((it,qi)=>{
+    const isDone = done.has(qi);
+    return `<div class="q"><p>${qi+1}. ${it.q}</p>
+      <div data-q="${qi}">${it.o.map((o,oi)=>`<button class="opt ${isDone && oi===it.c?'correct':''}" data-q="${qi}" data-o="${oi}" ${isDone?'disabled':''}>${o}</button>`).join('')}</div>
+      <div class="explain" id="qex${qi}" style="${isDone?'display:block':''}">${isDone?it.ex:''}</div></div>`;
+  }).join('');
+  document.getElementById('score').textContent = score;
+}
+document.getElementById('quiz').addEventListener('click', e => {
+  const b = e.target.closest('.opt'); if(!b || b.disabled) return;
+  const qi = +b.dataset.q, oi = +b.dataset.o, it = QUIZ[qi];
+  if(done.has(qi)) return; done.add(qi);
+  b.parentElement.querySelectorAll('.opt').forEach((el,i)=>{ el.disabled = true;
+    if(i===it.c) el.classList.add('correct'); else if(i===oi) el.classList.add('wrong'); });
+  const ex = document.getElementById('qex'+qi); ex.textContent = it.ex; ex.style.display='block';
+  if(oi===it.c){ score++; document.getElementById('score').textContent = score; }
+  saveState();
+});
+
+function shuffled(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+  return a;
+}
+function renderTool(view){
+  if(view===0) return renderFlash();
+  if(view===1) return renderMatch();
+  if(view===2) return renderPop();
+  if(view===3) return renderCheat();
+  if(view===4) return renderCdSim();
+  if(view===5) return renderReportCard();
+}
+
+let fcIdx = 0;
+const fcKnown = new Set(SAVED && Array.isArray(SAVED.fcKnown) ? SAVED.fcKnown : []);
+function renderFlash(){
+  const t = KEY_TERMS[fcIdx];
+  document.getElementById('toolWrap').innerHTML = `
+    <h3 style="color:var(--accent);margin-top:0">Flashcards</h3>
+    <p style="color:var(--muted);font-size:13px">Click a card to flip it. ${fcKnown.size} / ${KEY_TERMS.length} marked known.</p>
+    <div class="flash-stage"><div class="flash-card" id="flashCard">
+      <div class="flash-face flash-front">${t[0]}</div>
+      <div class="flash-face flash-back">${t[1]}</div>
+    </div></div>
+    <div class="flash-controls">
+      <button class="ghost" id="fcPrev">&larr; Prev</button>
+      <span class="counter" style="margin:0 6px">${fcIdx+1} / ${KEY_TERMS.length}</span>
+      <button class="ghost" id="fcKnow">${fcKnown.has(fcIdx) ? '✓ Known' : 'Mark known'}</button>
+      <button class="ghost" id="fcNext">Next &rarr;</button>
+    </div>`;
+  document.getElementById('flashCard').onclick = () => document.getElementById('flashCard').classList.toggle('flipped');
+  document.getElementById('fcPrev').onclick = () => { fcIdx = (fcIdx - 1 + KEY_TERMS.length) % KEY_TERMS.length; renderFlash(); };
+  document.getElementById('fcNext').onclick = () => { fcIdx = (fcIdx + 1) % KEY_TERMS.length; renderFlash(); };
+  document.getElementById('fcKnow').onclick = () => {
+    if(fcKnown.has(fcIdx)) fcKnown.delete(fcIdx); else fcKnown.add(fcIdx);
+    saveState(); renderFlash();
+  };
+}
+
+let matchPairs = [], matchTermOrder = [], matchDefOrder = [], matchSel = null, matchMatched = new Set(), matchAttempts = 0;
+let matchBestAttempts = SAVED && Number.isFinite(SAVED.matchBestAttempts) ? SAVED.matchBestAttempts : null;
+function newMatchRound(){
+  const n = Math.min(8, KEY_TERMS.length);
+  const idxs = shuffled([...Array(KEY_TERMS.length).keys()]).slice(0, n);
+  matchPairs = idxs.map(i => ({ key:i, term:KEY_TERMS[i][0], def:KEY_TERMS[i][1] }));
+  matchTermOrder = shuffled(matchPairs);
+  matchDefOrder = shuffled(matchPairs);
+  matchSel = null; matchMatched = new Set(); matchAttempts = 0;
+}
+function matchBtn(p, side){
+  const isMatched = matchMatched.has(p.key);
+  const isSel = matchSel && matchSel.key === p.key && matchSel.side === side;
+  const label = side === 'term' ? p.term : p.def;
+  return `<button class="match-btn ${isMatched?'matched':''} ${isSel?'sel':''}" data-key="${p.key}" data-side="${side}" ${isMatched?'disabled':''}>${label}</button>`;
+}
+function matchStatusText(){
+  if(matchMatched.size === matchPairs.length) return `Solved in ${matchAttempts} attempts!`;
+  return `Match each term to its definition. Attempts: ${matchAttempts}`;
+}
+function renderMatch(){
+  if(!matchPairs.length) newMatchRound();
+  document.getElementById('toolWrap').innerHTML = `
+    <h3 style="color:var(--accent);margin-top:0">Match</h3>
+    <p style="color:var(--muted);font-size:13px" id="matchStatus">${matchStatusText()}</p>
+    <div class="match-grid">
+      <div class="match-col">${matchTermOrder.map(p => matchBtn(p,'term')).join('')}</div>
+      <div class="match-col">${matchDefOrder.map(p => matchBtn(p,'def')).join('')}</div>
+    </div>
+    <button class="ghost" id="matchNew" style="margin-top:14px">New round</button>`;
+  document.querySelectorAll('.match-btn').forEach(b => b.addEventListener('click', onMatchClick));
+  document.getElementById('matchNew').onclick = () => { newMatchRound(); renderMatch(); };
+}
+function onMatchClick(e){
+  const b = e.currentTarget;
+  const key = +b.dataset.key, side = b.dataset.side;
+  if(matchMatched.has(key)) return;
+  if(!matchSel || matchSel.side === side){ matchSel = { key, side }; renderMatch(); return; }
+  matchAttempts++;
+  if(matchSel.key === key){
+    matchMatched.add(key);
+    matchSel = null;
+    if(matchMatched.size === matchPairs.length){
+      if(matchBestAttempts === null || matchAttempts < matchBestAttempts) matchBestAttempts = matchAttempts;
+      saveState();
+    }
+    renderMatch();
+  } else {
+    b.classList.add('wrong');
+    const status = document.getElementById('matchStatus');
+    if(status) status.textContent = `Not quite. Attempts: ${matchAttempts}`;
+    setTimeout(() => { matchSel = null; renderMatch(); }, 500);
+  }
+}
+
+function popPool(){
+  const fromLessons = LESSONS.filter(l => l.quick).map(l => ({ q:l.quick.q, opts:l.quick.choices, correct:l.quick.a, ex:l.quick.ex }));
+  const fromQuiz = QUIZ.map(q => ({ q:q.q, opts:q.o, correct:q.c, ex:q.ex }));
+  return [...fromLessons, ...fromQuiz];
+}
+let popSet = [], popIdx = 0, popScore = 0, popDone = false;
+let popLastScore = SAVED && Number.isFinite(SAVED.popLastScore) ? SAVED.popLastScore : null;
+let popLastTotal = SAVED && Number.isFinite(SAVED.popLastTotal) ? SAVED.popLastTotal : null;
+let popAttemptsCount = SAVED && Number.isFinite(SAVED.popAttemptsCount) ? SAVED.popAttemptsCount : 0;
+function newPop(){
+  const pool = shuffled(popPool());
+  popSet = pool.slice(0, Math.min(5, pool.length));
+  popIdx = 0; popScore = 0; popDone = false;
+}
+function renderPop(){
+  if(!popSet.length) newPop();
+  if(popDone){
+    document.getElementById('toolWrap').innerHTML = `
+      <h3 style="color:var(--accent);margin-top:0">Pop Quiz</h3>
+      <p>Score: <b>${popScore} / ${popSet.length}</b></p>
+      <button class="ghost" id="popAgain">Try another 5</button>`;
+    document.getElementById('popAgain').onclick = () => { newPop(); renderPop(); };
+    return;
+  }
+  const it = popSet[popIdx];
+  document.getElementById('toolWrap').innerHTML = `
+    <h3 style="color:var(--accent);margin-top:0">Pop Quiz</h3>
+    <p style="color:var(--muted);font-size:13px">Question ${popIdx+1} of ${popSet.length} &middot; Score so far: ${popScore}</p>
+    <div class="qc"><p style="font-weight:600;font-size:14px;margin:0 0 6px">${it.q}</p>
+      <div id="popOpts">${it.opts.map((o,oi)=>`<button class="opt" data-oi="${oi}">${o}</button>`).join('')}</div>
+      <div class="explain" id="popEx"></div></div>
+    <button class="ghost" id="popNext" style="margin-top:12px;display:none">Next &rarr;</button>`;
+  document.getElementById('popOpts').addEventListener('click', e => {
+    const b = e.target.closest('.opt'); if(!b || b.disabled) return;
+    const oi = +b.dataset.oi;
+    [...document.getElementById('popOpts').children].forEach((el,i) => {
+      el.disabled = true;
+      if(i===it.correct) el.classList.add('correct'); else if(i===oi) el.classList.add('wrong');
+    });
+    if(oi === it.correct) popScore++;
+    const ex = document.getElementById('popEx'); ex.textContent = it.ex; ex.style.display = 'block';
+    document.getElementById('popNext').style.display = 'inline-block';
+  });
+  document.getElementById('popNext').onclick = () => {
+    popIdx++;
+    if(popIdx >= popSet.length){
+      popDone = true;
+      popLastScore = popScore; popLastTotal = popSet.length; popAttemptsCount++;
+      saveState();
+    }
+    renderPop();
+  };
+}
+
+const CHEATSHEET = `
+  <h3 style="color:var(--accent);margin-top:0">Cheat Sheet</h3>
+  <table class="cheat">
+    <tr><th>Task / Fact</th><th>Rule</th></tr>
+    <tr><td>Check burn capability</td><td><code>wodim --devices</code></td></tr>
+    <tr><td>Download audio only</td><td><code>yt-dlp -x --audio-format &lt;fmt&gt;</code></td></tr>
+    <tr><td>Convert to Audio CD format</td><td><code>ffmpeg -ar 44100 -sample_fmt s16</code> → WAV</td></tr>
+    <tr><td>Exact Audio CD spec</td><td>44100Hz · 16-bit · 2-channel (stereo) PCM</td></tr>
+    <tr><td>Verify format before burning</td><td><code>ffprobe</code></td></tr>
+    <tr><td>Burn Audio CD</td><td><code>wodim -audio</code> / <code>cdrecord -audio</code></td></tr>
+    <tr><td>Burn Data CD</td><td><code>genisoimage</code>/<code>mkisofs</code> → ISO</td></tr>
+    <tr><td>No gaps between tracks</td><td>DAO (Disc At Once), not TAO</td></tr>
+    <tr><td>Trust a burn</td><td>Read-back/checksum verify — "completed" ≠ "good"</td></tr>
+    <tr><td>CD-DA data rate</td><td>176,400 bytes/sec (44100 × 16 × 2 ÷ 8)</td></tr>
+    <tr><td>Scope</td><td>Personal-use archival only — never redistribution</td></tr>
+  </table>
+  <p style="color:var(--muted);font-size:12px;margin-top:10px">Full lesson content covers the reasoning
+     behind each row — this page is for last-minute recall, not first-time learning.</p>`;
+function renderCheat(){ document.getElementById('toolWrap').innerHTML = CHEATSHEET; }
+
+/* Format & Capacity Simulator — this project's own Simulation tab.
+   Two real, checkable panels: a real Red Book Audio CD compliance
+   checker (identical logic to exercises/audio_cd_format.py's
+   is_cd_audio_compliant/describe_format_issues), and a real disc
+   capacity budget using the actual 176,400 bytes/sec CD-DA data rate
+   (track_bytes/disc_capacity_check). */
+function cdIsCompliant(sampleRate, bitDepth, channels){
+  return sampleRate === 44100 && bitDepth === 16 && channels === 2;
+}
+function cdDescribeIssues(sampleRate, bitDepth, channels){
+  const issues = [];
+  if(sampleRate !== 44100) issues.push(`sample rate ${sampleRate}Hz — Audio CD requires exactly 44100Hz`);
+  if(bitDepth !== 16) issues.push(`bit depth ${bitDepth}-bit — Audio CD requires exactly 16-bit`);
+  if(channels !== 2) issues.push(`${channels} channel(s) — Audio CD requires exactly 2 (stereo)`);
+  return issues;
+}
+function cdTrackBytes(durationSeconds){ return durationSeconds * 176400; }
+function cdCapacityCheck(trackDurations, discMinutes){
+  const total = trackDurations.reduce((a,b) => a+b, 0);
+  const capacity = discMinutes * 60;
+  return { total, fits: total <= capacity, capacity };
+}
+
+let cdSampleRate = SAVED && Number.isFinite(SAVED.cdSampleRate) ? SAVED.cdSampleRate : 44100;
+let cdBitDepth = SAVED && Number.isFinite(SAVED.cdBitDepth) ? SAVED.cdBitDepth : 16;
+let cdChannels = SAVED && Number.isFinite(SAVED.cdChannels) ? SAVED.cdChannels : 2;
+let cdTracks = SAVED && Array.isArray(SAVED.cdTracks) ? SAVED.cdTracks : [
+  { name: 'Track 1', seconds: 210 }, { name: 'Track 2', seconds: 195 }, { name: 'Track 3', seconds: 240 }
+];
+let cdDiscMinutes = SAVED && Number.isFinite(SAVED.cdDiscMinutes) ? SAVED.cdDiscMinutes : 74;
+
+function cdFormatTime(sec){
+  const m = Math.floor(sec/60), s = Math.round(sec%60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function cdUpdateFormatOutputs(){
+  const compliant = cdIsCompliant(cdSampleRate, cdBitDepth, cdChannels);
+  const issues = cdDescribeIssues(cdSampleRate, cdBitDepth, cdChannels);
+  const el = document.getElementById('cdFormatReadout');
+  if(!el) return;
+  if(compliant){
+    el.innerHTML = `<span class="cd-good">✓ Compliant — this file will burn as valid Audio CD audio.</span>`;
+  } else {
+    el.innerHTML = `<span class="cd-bad">✗ Not compliant:</span><br>` + issues.map(i => `&middot; ${i}`).join('<br>');
+  }
+}
+function cdUpdateCapacityOutputs(){
+  const durations = cdTracks.map(t => t.seconds);
+  const { total, fits, capacity } = cdCapacityCheck(durations, cdDiscMinutes);
+  const totalBytes = durations.reduce((a,s) => a + cdTrackBytes(s), 0);
+  const pct = Math.min(100, (total/capacity)*100);
+  const listEl = document.getElementById('cdTrackList');
+  if(listEl) listEl.innerHTML = cdTracks.map((t,i) =>
+    `<div><span>${t.name} — ${cdFormatTime(t.seconds)}</span><button class="ghost" data-i="${i}" data-action="removeTrack" style="padding:2px 8px">✕</button></div>`
+  ).join('');
+  const gaugeEl = document.getElementById('cdGaugeFill');
+  if(gaugeEl){ gaugeEl.style.width = pct + '%'; gaugeEl.style.background = fits ? 'var(--good)' : 'var(--bad)'; }
+  const readoutEl = document.getElementById('cdCapacityReadout');
+  if(readoutEl) readoutEl.innerHTML =
+    `<b>Used:</b> ${cdFormatTime(total)} / ${cdFormatTime(capacity)} &nbsp; <b>Raw bytes:</b> ${totalBytes.toLocaleString()} &nbsp;
+     <b>Status:</b> <span class="${fits?'cd-good':'cd-bad'}">${fits ? '✓ Fits on disc' : '✗ Does not fit — remove a track or use an 80min disc'}</span>`;
+}
+function renderCdSim(){
+  document.getElementById('toolWrap').innerHTML = `
+    <h3 style="color:var(--accent);margin-top:0">Format &amp; Capacity Simulator</h3>
+    <p style="color:var(--muted);font-size:13px">Two real, checkable panels — no canned demo. Check a
+       file's real Red Book Audio CD compliance, and budget a real disc's time capacity using the
+       actual 176,400 bytes/sec CD-DA data rate.</p>
+
+    <div class="cd-section">
+      <h4>Audio CD format compliance checker</h4>
+      <div class="cd-row">
+        <label>Sample rate (Hz) <input type="number" id="cdSampleRateInput" value="${cdSampleRate}" step="100"></label>
+        <label>Bit depth <input type="number" id="cdBitDepthInput" value="${cdBitDepth}" step="1"></label>
+        <label>Channels <input type="number" id="cdChannelsInput" value="${cdChannels}" step="1" min="1"></label>
+      </div>
+      <div class="cd-readout" id="cdFormatReadout"></div>
+    </div>
+
+    <div class="cd-section">
+      <h4>Disc capacity budget (mirrors <code>exercises/audio_cd_format.py</code>)</h4>
+      <div class="cd-row">
+        <label>Disc size
+          <select id="cdDiscMinutesInput">
+            <option value="74" ${cdDiscMinutes===74?'selected':''}>74 min (650MB)</option>
+            <option value="80" ${cdDiscMinutes===80?'selected':''}>80 min (700MB)</option>
+          </select>
+        </label>
+        <label>New track name <input type="text" id="cdNewTrackName" value="New Track"></label>
+        <label>Duration (sec) <input type="number" id="cdNewTrackSeconds" value="180" min="1"></label>
+        <button class="ghost" id="cdAddTrackBtn">+ Add track</button>
+      </div>
+      <div class="cd-tracklist" id="cdTrackList"></div>
+      <div class="cd-gauge-bar"><div class="cd-gauge-fill" id="cdGaugeFill"></div></div>
+      <div class="cd-readout" id="cdCapacityReadout"></div>
+    </div>`;
+
+  cdUpdateFormatOutputs();
+  cdUpdateCapacityOutputs();
+
+  document.getElementById('cdSampleRateInput').addEventListener('input', e => { cdSampleRate = +e.target.value || 0; saveState(); cdUpdateFormatOutputs(); });
+  document.getElementById('cdBitDepthInput').addEventListener('input', e => { cdBitDepth = +e.target.value || 0; saveState(); cdUpdateFormatOutputs(); });
+  document.getElementById('cdChannelsInput').addEventListener('input', e => { cdChannels = +e.target.value || 0; saveState(); cdUpdateFormatOutputs(); });
+
+  document.getElementById('cdDiscMinutesInput').addEventListener('change', e => { cdDiscMinutes = +e.target.value; saveState(); cdUpdateCapacityOutputs(); });
+  document.getElementById('cdAddTrackBtn').onclick = () => {
+    const name = document.getElementById('cdNewTrackName').value || 'Track';
+    const seconds = +document.getElementById('cdNewTrackSeconds').value || 0;
+    if(seconds > 0){ cdTracks.push({ name, seconds }); saveState(); cdUpdateCapacityOutputs(); }
+  };
+  document.getElementById('cdTrackList').addEventListener('click', e => {
+    const b = e.target.closest('button[data-action="removeTrack"]'); if(!b) return;
+    cdTracks.splice(+b.dataset.i, 1);
+    saveState(); cdUpdateCapacityOutputs();
+  });
+}
+
+function letterGrade(pct){
+  if(pct === null) return { text:'—', cls:'grade-dash' };
+  if(pct >= 90) return { text:'A', cls:'grade-A' };
+  if(pct >= 80) return { text:'B', cls:'grade-B' };
+  if(pct >= 70) return { text:'C', cls:'grade-C' };
+  if(pct >= 60) return { text:'D', cls:'grade-D' };
+  return { text:'F', cls:'grade-F' };
+}
+function renderReportCard(){
+  const lessonsDone = answered.filter(Boolean).length;
+  const quizPct = QUIZ.length ? Math.round((score / QUIZ.length) * 100) : null;
+  const quizAttempted = done.size > 0;
+  const grade = letterGrade(quizAttempted ? quizPct : null);
+  const overallItems = lessonsDone + (quizAttempted ? 1 : 0);
+  const overallTotal = LESSONS.length + 1;
+  const overallPct = Math.round((overallItems / overallTotal) * 100);
+  const now = new Date();
+  document.getElementById('toolWrap').innerHTML = `
+    <div class="report-card">
+      <h3 style="color:var(--accent);margin-top:0">Report Card</h3>
+      <p style="color:var(--muted);font-size:12px;margin-top:-6px">CD Burning Workstation &middot; generated ${now.toLocaleDateString()} ${now.toLocaleTimeString()}</p>
+      <div class="report-overall">
+        <span class="big ${grade.cls}">${grade.text}</span>
+        <span style="color:var(--muted);font-size:13px">Final quiz grade${quizAttempted ? '' : ' (not yet taken)'}</span>
+      </div>
+      <h4>Lessons</h4>
+      <div class="report-row"><span>Quick checks completed</span><span class="grade">${lessonsDone} / ${LESSONS.length}</span></div>
+      <h4>Final Quiz</h4>
+      <div class="report-row"><span>Score</span><span class="grade">${quizAttempted ? `${score} / ${QUIZ.length} (${quizPct}%)` : 'Not attempted'}</span></div>
+      <h4>Pop Quiz</h4>
+      <div class="report-row"><span>Most recent 5-question run</span><span class="grade">${popLastScore !== null ? `${popLastScore} / ${popLastTotal}` : 'Not attempted'}</span></div>
+      <div class="report-row"><span>Runs completed</span><span class="grade">${popAttemptsCount}</span></div>
+      <h4>Flashcards</h4>
+      <div class="report-row"><span>Terms marked known</span><span class="grade">${fcKnown.size} / ${KEY_TERMS.length}</span></div>
+      <h4>Match Game</h4>
+      <div class="report-row"><span>Best round (fewest attempts)</span><span class="grade">${matchBestAttempts !== null ? matchBestAttempts : 'Not completed'}</span></div>
+      <h4>Overall</h4>
+      <div class="report-row"><span>Lessons + quiz completed</span><span class="grade">${overallItems} / ${overallTotal} (${overallPct}%)</span></div>
+      <button class="ghost" id="printBtn">🖨️ Print / Save as PDF</button>
+      <p style="color:var(--muted);font-size:11px;margin-top:8px">In the print dialog, choose <b>Save as PDF</b> and
+         save it into this project's <code>docs/</code> folder to keep a dated record.</p>
+    </div>`;
+  document.getElementById('printBtn').onclick = () => window.print();
+}
+
+document.getElementById('pills').addEventListener('click', e => {
+  const p = e.target.closest('.pill'); if(!p) return; idx = +p.dataset.i; render();
+});
+document.getElementById('prev').onclick = () => { if(idx>0){ idx--; render(); } };
+document.getElementById('next').onclick = () => { if(idx<LESSONS.length){ idx++; render(); } };
+render();
+</script>
+</body></html>
